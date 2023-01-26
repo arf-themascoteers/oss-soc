@@ -5,6 +5,7 @@ import time
 
 
 def train(device, ds):
+    torch.manual_seed(0)
     batch_size = 300
     dataloader = DataLoader(ds, batch_size=batch_size, shuffle=True)
     x_size = ds.get_x().shape[1]
