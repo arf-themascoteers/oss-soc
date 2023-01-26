@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 
-rgb_file = "rgb.csv"
+rgb_file = "data_rgb_raw.csv"
 
 npdf = pd.read_csv(rgb_file).to_numpy()
 print("max")

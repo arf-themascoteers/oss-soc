@@ -26,7 +26,7 @@ class DSManager:
         return self.train_ds
 
     def get_10_folds(self):
-        full_data = self.full_data[0:1000]
+        full_data = self.full_data
         kf = KFold(n_splits=10)
         for i, (train_index, test_index) in enumerate(kf.split(full_data)):
             train_data = full_data[train_index]
