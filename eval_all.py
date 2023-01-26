@@ -36,6 +36,8 @@ def process():
                 ds = ds_manager.DSManager(par)
                 r2s = evaluate.r2(ds, col)
                 r2_mean = np.mean(r2s)
+                r2s = np.round(r2s,3)
+                r2_mean = np.round(r2_mean, 3)
                 print(par, col, r2_mean)
                 r2_log = open(f"log.txt", "a")
                 r2_log.write(f"{col} - {par}: {str(r2s)}\n")
