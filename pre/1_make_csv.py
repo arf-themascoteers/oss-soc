@@ -16,15 +16,15 @@ not_found_spectra = []
 
 x = 0
 for counter, row in oc_df.iterrows():
-    raw_smp_id = row["uuid"]
-    oc = row["oc"]
+    raw_smp_id = row["id.layer_uuid_c"]
+    oc = row["oc_usda.calc_wpct"]
     if math.isnan(oc):
         continue
     smp_id = raw_smp_id
     if smp_id in done_ids:
         continue
 
-    rows = (spectra_df.loc[spectra_df['uuid'] == smp_id])
+    rows = (spectra_df.loc[spectra_df['id.layer_uuid_c'] == smp_id])
 
     if len(rows) == 0:
         not_found_spectra.append(smp_id)
@@ -34,9 +34,9 @@ for counter, row in oc_df.iterrows():
         duplicate_spectra.append(spectra_row)
 
 
-    r = spectra_row["r"]
-    g = spectra_row["g"]
-    b = spectra_row["b"]
+    r = spectra_row["scan_visnir.664_pcnt"]
+    g = spectra_row["scan_visnir.560_pcnt"]
+    b = spectra_row["scan_visnir.490_pcnt"]
 
     if math.isnan(r) or math.isnan(g) or math.isnan(b):
         continue

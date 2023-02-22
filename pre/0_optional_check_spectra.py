@@ -11,9 +11,9 @@ oc_df = pd.read_csv(oc_file)
 not_found = []
 x = 0
 for counter, row in spectra_df.iterrows():
-    raw_smp_id = row["uuid"]
+    raw_smp_id = row["id.layer_uuid_c"]
     smp_id = raw_smp_id
-    rows = (oc_df.loc[oc_df['uuid'] == smp_id])
+    rows = (oc_df.loc[oc_df['id.layer_uuid_c'] == smp_id])
 
     if len(rows) == 0:
         not_found.append(smp_id)
