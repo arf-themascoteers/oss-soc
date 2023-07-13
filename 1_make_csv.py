@@ -2,56 +2,74 @@ import os
 import math
 import pandas as pd
 
-spectra_file = "spectra.csv"
-oc_file = "oc.csv"
-out_file = "rgb.csv"
-
-spectra_df = pd.read_csv(spectra_file)
-oc_df = pd.read_csv(oc_file)
-out = open(out_file, "w")
-out.write(f"r,g,b,oc\n")
 done_ids = []
-duplicate_spectra = []
-not_found_spectra = []
+out_file = "out.csv"
+out = open(out_file, "w")
+visnir_band_list = list(range(350, 2502, 2))
+visnir_band_list = [str(i) + "_visnir" for i in visnir_band_list]
+visnir_cols = ",".join(visnir_band_list)
 
-x = 0
-for counter, row in oc_df.iterrows():
-    raw_smp_id = row["id.layer_uuid_c"]
-    oc = row["oc_usda.calc_wpct"]
-    if math.isnan(oc):
-        continue
-    smp_id = raw_smp_id
-    if smp_id in done_ids:
-        continue
+mir_band_list = list(range(600, 4002, 2))
+mir_band_list = [str(i) + "_mir" for i in mir_band_list]
+mir_cols = ",".join(mir_band_list)
 
-    rows = (spectra_df.loc[spectra_df['id.layer_uuid_c'] == smp_id])
+out.write(f"{visnir_cols},{mir_cols},oc,source\n")
 
-    if len(rows) == 0:
-        not_found_spectra.append(smp_id)
-        continue
-    spectra_row = rows.iloc[0]
-    if len(rows) > 1:
-        duplicate_spectra.append(spectra_row)
+for idx, d in enumerate(os.listdir("data")):
+    print(f"**********{d}**************")
+    path = os.path.join("data",d)
+    visnir = os.path.join(path, "visnir.data.csv")
+    mir = os.path.join(path, "mir.data.csv")
+    soillab_file = os.path.join(path, "soillab.data.csv")
+    visnir_df = pd.read_csv(visnir)
+    mir_df = pd.read_csv(mir)
+    soillab_df = pd.read_csv(soillab_file)
 
 
-    r = spectra_row["scan_visnir.664_pcnt"]
-    g = spectra_row["scan_visnir.560_pcnt"]
-    b = spectra_row["scan_visnir.490_pcnt"]
 
-    if math.isnan(r) or math.isnan(g) or math.isnan(b):
-        continue
 
-    out.write(f"{r},{g},{b},{oc}\n")
+    x = 0
+    for counter, row in soillab_df.iterrows():
+        raw_smp_id = row["id.layer_uuid_c"]
+        if raw_smp_id in done_ids:
+            print("DUPLICATE alert")
+            exit(1)
+        oc = row["oc_usda.calc_wpct"]
+        if math.isnan(oc):
+            continue
+        smp_id = raw_smp_id
+        if smp_id in done_ids:
+            continue
 
-    done_ids.append(smp_id)
-    x = x+1
-    if x%100 == 0:
-        print("Processed", x, counter)
+        rows = (visnir_df.loc[visnir_df['id.layer_uuid_c'] == smp_id])
+        if len(rows) == 0:
+            continue
+        visnir_values = []
+        for band in range(350, 2502, 2):
+            band_str = f"scan_visnir.{band}_pcnt"
+            value = sum(rows[band_str]) / len(rows)
+            visnir_values.append(value)
 
-print("total",len(done_ids))
-print("not found",len(not_found_spectra))
-print("duplicate",len(duplicate_spectra))
+
+        rows = (mir_df.loc[mir_df['id.layer_uuid_c'] == smp_id])
+        if len(rows) == 0:
+            continue
+        mir_values = []
+        for band in range(600,4002,2):
+            band_str = f"scan_mir.{band}_abs"
+            value = sum(rows[band_str])/len(rows)
+            mir_values.append(value)
+
+        visnir_values = [str(i) for i in visnir_values]
+        visnir_str = ",".join(visnir_values)
+        mir_values = [str(i) for i in mir_values]
+        mir_str = ",".join(mir_values)
+        out.write(f"{visnir_str},{mir_str},{oc},{idx}\n")
+
+        done_ids.append(smp_id)
+        x = x+1
+        if x%100 == 0:
+            print("Processed", x, counter)
 
 out.close()
-print("done")
-
+print("total",len(done_ids))
