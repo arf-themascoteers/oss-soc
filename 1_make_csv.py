@@ -1,19 +1,21 @@
 import os
 import math
 import pandas as pd
+import numpy as np
 
 done_ids = []
 out_file = "out.csv"
 out = open(out_file, "w")
-visnir_band_list = list(range(350, 2502, 2))
-visnir_band_list = [str(i) + "_visnir" for i in visnir_band_list]
-visnir_cols = ",".join(visnir_band_list)
 
-mir_band_list = list(range(600, 4002, 2))
-mir_band_list = [str(i) + "_mir" for i in mir_band_list]
-mir_cols = ",".join(mir_band_list)
+visnir_cols = [f"scan_visnir.{band}_pcnt" for band in range(350, 2502, 2)]
+visnir_cols_str = ",".join(visnir_cols)
+visnir_no_full_row_found = 0
 
-out.write(f"{visnir_cols},{mir_cols},oc,source\n")
+mir_cols = [f"scan_mir.{band}_abs" for band in range(600,4002,2)]
+mir_cols_str = ",".join(mir_cols)
+mir_no_full_row_found = 0
+
+out.write(f"{visnir_cols_str},{mir_cols_str},oc,source\n")
 
 for idx, d in enumerate(os.listdir("data")):
     print(f"**********{d}**************")
@@ -24,9 +26,6 @@ for idx, d in enumerate(os.listdir("data")):
     visnir_df = pd.read_csv(visnir)
     mir_df = pd.read_csv(mir)
     soillab_df = pd.read_csv(soillab_file)
-
-
-
 
     x = 0
     for counter, row in soillab_df.iterrows():
@@ -44,27 +43,42 @@ for idx, d in enumerate(os.listdir("data")):
         rows = (visnir_df.loc[visnir_df['id.layer_uuid_c'] == smp_id])
         if len(rows) == 0:
             continue
-        visnir_values = []
-        for band in range(350, 2502, 2):
-            band_str = f"scan_visnir.{band}_pcnt"
-            value = sum(rows[band_str]) / len(rows)
-            visnir_values.append(value)
 
+        df = rows[visnir_cols]
+        selected_rows = []
+        for i in range(len(rows)):
+            a_row = df.iloc[i].to_numpy()
+            if np.count_nonzero(np.isnan(a_row)) == 0:
+                selected_rows.append(i)
+
+        if len(selected_rows) == 0:
+            visnir_no_full_row_found = visnir_no_full_row_found + 1
+            continue
+
+        visnir_data = df.iloc[selected_rows]
+        visnir_data = np.mean(visnir_data.to_numpy(), axis=0)
+        visnir_data_str = ",".join([str(i) for i in visnir_data])
 
         rows = (mir_df.loc[mir_df['id.layer_uuid_c'] == smp_id])
         if len(rows) == 0:
             continue
-        mir_values = []
-        for band in range(600,4002,2):
-            band_str = f"scan_mir.{band}_abs"
-            value = sum(rows[band_str])/len(rows)
-            mir_values.append(value)
 
-        visnir_values = [str(i) for i in visnir_values]
-        visnir_str = ",".join(visnir_values)
-        mir_values = [str(i) for i in mir_values]
-        mir_str = ",".join(mir_values)
-        out.write(f"{visnir_str},{mir_str},{oc},{idx}\n")
+        df = rows[mir_cols]
+        selected_rows = []
+        for i in range(len(rows)):
+            a_row = df.iloc[i].to_numpy()
+            if np.count_nonzero(np.isnan(a_row)) == 0:
+                selected_rows.append(i)
+
+        if len(selected_rows) == 0:
+            mir_no_full_row_found = mir_no_full_row_found + 1
+            continue
+
+        mir_data = df.iloc[selected_rows]
+        mir_data = np.mean(mir_data.to_numpy(), axis=0)
+        mir_data_str = ",".join([str(i) for i in mir_data])
+
+        out.write(f"{visnir_data_str},{mir_data_str},{oc},{idx}\n")
 
         done_ids.append(smp_id)
         x = x+1
@@ -73,3 +87,5 @@ for idx, d in enumerate(os.listdir("data")):
 
 out.close()
 print("total",len(done_ids))
+print("visnir_no_full_row_found",visnir_no_full_row_found)
+print("mir_no_full_row_found",mir_no_full_row_found)
