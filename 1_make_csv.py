@@ -10,10 +10,12 @@ out = open(out_file, "w")
 visnir_cols = [f"scan_visnir.{band}_pcnt" for band in range(350, 2502, 2)]
 visnir_cols_str = ",".join(visnir_cols)
 visnir_no_full_row_found = 0
+visnir_col_out = ",".join([str(band)+"_v" for band in range(350, 2502, 2)])
 
 mir_cols = [f"scan_mir.{band}_abs" for band in range(600,4002,2)]
 mir_cols_str = ",".join(mir_cols)
 mir_no_full_row_found = 0
+mir_col_out = ",".join([str(band)+"_m" for band in range(600,4002,2)])
 
 out.write(f"{visnir_cols_str},{mir_cols_str},oc,source\n")
 
