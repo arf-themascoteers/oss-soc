@@ -57,6 +57,8 @@ for idx, d in enumerate(os.listdir("data")):
 
         visnir_data = df.iloc[selected_rows]
         visnir_data = np.mean(visnir_data.to_numpy(), axis=0)
+        if np.count_nonzero(np.isnan(visnir_data)) != 0:
+            print("ALERT")
         visnir_data_str = ",".join([str(i) for i in visnir_data])
 
         rows = (mir_df.loc[mir_df['id.layer_uuid_c'] == smp_id])
@@ -76,6 +78,8 @@ for idx, d in enumerate(os.listdir("data")):
 
         mir_data = df.iloc[selected_rows]
         mir_data = np.mean(mir_data.to_numpy(), axis=0)
+        if np.count_nonzero(np.isnan(mir_data)) != 0:
+            print("ALERT")
         mir_data_str = ",".join([str(i) for i in mir_data])
 
         out.write(f"{visnir_data_str},{mir_data_str},{oc},{idx}\n")
