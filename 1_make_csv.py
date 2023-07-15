@@ -17,7 +17,7 @@ mir_cols_str = ",".join(mir_cols)
 mir_no_full_row_found = 0
 mir_col_out = ",".join([str(band)+"_m" for band in range(600,4002,2)])
 
-out.write(f"{uuid},{visnir_col_out},{mir_col_out},oc,source\n")
+out.write(f"uuid,{visnir_col_out},{mir_col_out},oc,source\n")
 
 for idx, d in enumerate(os.listdir("data")):
     print(f"**********{d}**************")
